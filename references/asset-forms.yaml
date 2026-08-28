@@ -66,5 +66,6 @@ forms:
 
 tool_fallback:
   - If the image tool cannot set target pixels, record the actual pixel_size in the manifest.
-  - If the image tool cannot create real alpha, use a solid background and record alpha.actual as false.
+  - If alpha is preferred and the image tool cannot create it, use a solid background and record alpha.actual as false.
+  - If alpha is required and the image tool cannot create it, record alpha.actual as false and keep the asset in draft or rework; it cannot pass ready validation.
   - Do not combine multiple requested stickers into one source asset. Generate them individually; a composite is preview_sheet only.

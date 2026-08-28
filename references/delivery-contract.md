@@ -7,7 +7,7 @@
 在用户指定的私有输出目录中创建以下结构；未指定时使用工作区的 outputs/<character-id>/。输出目录应被 Git 忽略。优先运行以下脚本创建骨架，脚本会拒绝覆盖已有交付包：
 
 ~~~text
-python scripts/init_delivery_package.py <character-id> --output-root outputs
+python <skill-root>/scripts/init_delivery_package.py <character-id> --output-root <workspace>/outputs
 ~~~
 
 ~~~text
@@ -59,10 +59,10 @@ python scripts/init_delivery_package.py <character-id> --output-root outputs
 3. 存在用户确认的 character-spec-vN，且 approved_anchor 指向对应原型。
 4. 每个可用资产都单独生成、单独 QA，并登记为 manifest 中的 source_asset。
 5. 预览拼图仅由已 QA 通过的独立资产组成，并登记为 preview。
-6. 运行 scripts/validate_delivery.py <delivery-root> --ready 无错误。
+6. 运行 `python <skill-root>/scripts/validate_delivery.py <delivery-root> --manifest contracts/delivery-manifest-rN.json --ready` 无错误；把 `rN` 替换为实际发布号。
 
 ## 命名与可追溯性
 
 使用 <asset-id>-v<N>-r<N>.png 命名独立 PNG，例如 happy-wave-v1-r2.png。manifest 中记录文件的实际 pixel_size、actual alpha、SHA-256 和来源人物版本；不要凭目标规格填写实际值。
 
-参考 references/asset-forms.yaml 选择默认规格。图像工具不能输出透明背景或指定尺寸时，使用该工具实际输出，准确记录 alpha: false 或实际像素；不要把白底图标成透明贴纸。
+参考 references/asset-forms.yaml 选择默认规格。图像工具不能输出透明背景或指定尺寸时，使用该工具实际输出，准确记录 alpha: false 或实际像素；不要把白底图标成透明贴纸。要求真实 alpha 的资产若实际为 false，只能保留为 draft/rework，不能通过 ready 校验。

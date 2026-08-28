@@ -1,6 +1,6 @@
 ---
 name: personal-ip-image-pack
-description: 根据用户本人或已获授权人物的 1–3 张照片，制作可长期复用、可版本化交付的个人卡通 IP。支持选择六种风格、建立已确认的人物原型、生成独立头像/贴纸/动作资产，并交付角色设定、清单与验收记录。当用户要求基于本人照片或已确认个人 IP 制作卡通头像、博主形象、人物标志、表情贴纸、动作资产或照片转卡通形象时使用。
+description: 根据用户本人或已获授权人物的 1–2 张照片，制作可长期复用、可版本化交付的个人卡通 IP。支持选择六种风格、建立已确认的人物原型、生成独立头像/贴纸/动作资产，并交付角色设定、清单与验收记录。当用户要求基于本人照片或已确认个人 IP 制作卡通头像、博主形象、人物标志、表情贴纸、动作资产或照片转卡通形象时使用。
 ---
 
 # 个人 IP 形象与表情包生成
@@ -13,7 +13,7 @@ description: 根据用户本人或已获授权人物的 1–3 张照片，制作
 - 选择风格后读 references/style-specs.yaml。它是六种风格、能力路由、提示词规则和风格 QA 的唯一事实来源。
 - 生成前读 references/generation-prompts.md 与 references/asset-forms.yaml。
 - 使用内置参考图前读 references/style-asset-rights.yaml。只有对应组的 status 为 cleared 时，才能把图像作为生图参考；否则只使用 style-specs.yaml 的文字规范。
-- 用 python scripts/init_delivery_package.py <character-id> --output-root outputs 创建私有交付包；不要覆盖已有包、不要修改内置模板，也不要把用户原始照片复制到 Skill 仓库或默认交付包。
+- 从 Skill 根目录解析脚本路径，并把输出目录指向用户工作区；例如用 `python <skill-root>/scripts/init_delivery_package.py <character-id> --output-root <workspace>/outputs` 创建私有交付包。不要覆盖已有包、不要修改内置模板，也不要把用户原始照片复制到 Skill 仓库或默认交付包。
 
 ## 总体原则
 
@@ -78,7 +78,7 @@ description: 根据用户本人或已获授权人物的 1–3 张照片，制作
 4. 按 generation-prompts.md 的五段式模板生成一个干净、单人的 prototype-d1-r1.png。原型默认使用该风格的 default_prototype 与背景策略。
 5. 用 acceptance-qa 模板执行通用检查和该风格 qa；不通过时只修复失败项。
 6. 请用户确认：像不像本人、风格是否正确、发型/服装/配色是否满意、哪些特征必须修改。
-7. 只有用户明确确认后，才冻结为 character-spec-v1.yaml，并把 approved_anchor 指向 prototype-v1-r1.png。此时 v1 成为后续所有资产的唯一人物锚点。
+7. 只有用户明确确认后，才把获批草案复制为 prototype-v1-r1.png、冻结为 character-spec-v1.yaml，并把 approved_anchor 指向该 v1 原型。保留原草案，不覆盖旧文件。此时 v1 成为后续所有资产的唯一人物锚点。
 
 原型规则：
 
@@ -100,7 +100,7 @@ description: 根据用户本人或已获授权人物的 1–3 张照片，制作
 1. 只使用用户确认的 character-spec-vN 与 approved_anchor 作为扩展人物参考；不要重新用真人照设计角色。
 2. 先确认本轮资产清单。每个表情、动作、换装或场景必须生成一张独立 PNG，并登记为 source_asset。
 3. 每张图只改变 mutable_fields 中的表情、姿势、手势或当前必要道具；其他锁定项不变。
-4. 参照 asset-forms.yaml 设定画幅、格式、透明通道和安全边距。图像工具不支持真实 alpha 时，输出纯色背景并在 manifest 中记录 alpha.actual: false。
+4. 参照 asset-forms.yaml 设定画幅、格式、透明通道和安全边距。图像工具不支持真实 alpha 时，输出纯色背景并在 manifest 中记录 alpha.actual: false；若该资产要求 alpha，只能保留为 draft/rework，不能标为 qa_passed 或通过 `--ready` 校验。
 5. 仅在所有独立资产 QA 通过后，才生成 preview_sheet。拼图只供预览，不能替代可用贴纸或动作文件。
 6. 默认每个失败资产最多进行两次针对性重做；仍失败时停止并向用户说明失败项，等待方向，而不是无止境重生成整包。
 
@@ -120,10 +120,10 @@ description: 根据用户本人或已获授权人物的 1–3 张照片，制作
 - 未复制参考人物身份、服装、道具、宠物、文字或签名。
 - preview 仅由通过 QA 的独立 source_asset 组成。
 
-运行以下检查后才能把发布状态标为 qa_passed 或 accepted：
+先人工确认照片可用性、人物原型、风格能力、素材权利状态和预览来源，再运行机器可检查的清单与文件校验。把 `rN` 替换为实际发布号；只有两类检查都通过，才能把发布状态标为 qa_passed 或 accepted：
 
 ~~~text
-python scripts/validate_delivery.py <delivery-root> --ready
+python <skill-root>/scripts/validate_delivery.py <delivery-root> --manifest contracts/delivery-manifest-rN.json --ready
 ~~~
 
 最终交付至少包含：
